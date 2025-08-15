@@ -1,0 +1,56 @@
+{
+  "name": "feat-flip",
+  "version": "1.0.0",
+  "description": "Feature flag service for Node.js, NestJS, and React",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "feature-flag",
+    "nodejs",
+    "nestjs",
+    "react",
+    "toggle"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./adapters/*": {
+      "import": "./dist/esm/adapters/*.js",
+      "require": "./dist/cjs/adapters/*.js"
+    }
+  },
+  "scripts": {
+    "build:esm": "tsc --project tsconfig.json",
+    "build:cjs": "tsc --project tsconfig.cjs.json",
+    "build": "npm run build:esm && npm run build:cjs",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "node-cache": "^5.1.2",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/node-cache": "^4.2.5",
+    "@types/pg": "^8.15.5"
+  },
+  "peerDependencies": {
+    "mongodb": "^6.18.0",
+    "mysql2": "^3.14.3"
+  },
+  "peerDependenciesMeta": {
+    "mysql2": {
+      "optional": true
+    },
+    "mongodb": {
+      "optional": true
+    }
+  }
+}
