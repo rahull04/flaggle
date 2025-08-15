@@ -1,29 +1,74 @@
 import NodeCache from "node-cache";
 export class FeatureFlagService {
-    constructor(adapter, defaultEnv = "prod", cacheTtl = 60) {
+    constructor(adapter, defaultEnv = "prod", cacheTtl = 60 // seconds
+    ) {
         this.adapter = adapter;
         this.defaultEnv = defaultEnv;
         this.cacheTtl = cacheTtl;
         this.cache = new NodeCache({ stdTTL: cacheTtl });
     }
-    async isEnabled(key, env) {
+    /**
+     * Check if a feature flag is enabled.
+     * @param key - Flag key
+     * @param env - Environment (defaults to defaultEnv)
+     * @param refresh - Bypass cache and fetch fresh value
+     */
+    async isEnabled(key, env, refresh = false) {
         var _a;
         const environment = env || this.defaultEnv;
         const cacheKey = `${environment}:${key}`;
-        let flag = this.cache.get(cacheKey);
+        let flag;
+        if (!refresh) {
+            flag = this.cache.get(cacheKey);
+        }
         if (!flag) {
             flag = await this.adapter.getFlag(key, environment);
-            if (flag)
-                this.cache.set(cacheKey, flag);
+            if (flag) {
+                this.cache.set(cacheKey, flag, this.cacheTtl);
+            }
         }
         return (_a = flag === null || flag === void 0 ? void 0 : flag.enabled) !== null && _a !== void 0 ? _a : false;
     }
-    async getAllFlags(env) {
+    /**
+     * Get all flags for an environment.
+     * Uses cache per environment.
+     */
+    async getAllFlags(env, refresh = false) {
         const environment = env || this.defaultEnv;
-        return this.adapter.getAllFlags(environment);
+        const cacheKey = `allFlags:${environment}`;
+        let flags;
+        if (!refresh) {
+            flags = this.cache.get(cacheKey);
+        }
+        if (!flags) {
+            flags = await this.adapter.getAllFlags(environment);
+            this.cache.set(cacheKey, flags, this.cacheTtl);
+        }
+        return flags;
     }
+    /**
+     * Upsert a flag and update the cache.
+     */
     async setFlag(flag) {
         await this.adapter.upsertFlag(flag);
-        this.cache.set(`${flag.environment}:${flag.key}`, flag);
+        const cacheKey = `${flag.environment}:${flag.key}`;
+        this.cache.set(cacheKey, flag, this.cacheTtl);
+        // Also refresh the environment cache
+        const envCacheKey = `allFlags:${flag.environment}`;
+        const allFlags = await this.adapter.getAllFlags(flag.environment);
+        this.cache.set(envCacheKey, allFlags, this.cacheTtl);
+    }
+    /**
+     * Delete a flag and remove it from cache.
+     */
+    async deleteFlag(key, env) {
+        const environment = env || this.defaultEnv;
+        await this.adapter.deleteFlag(key, environment);
+        const cacheKey = `${environment}:${key}`;
+        this.cache.del(cacheKey);
+        // Refresh environment cache
+        const envCacheKey = `allFlags:${environment}`;
+        const allFlags = await this.adapter.getAllFlags(environment);
+        this.cache.set(envCacheKey, allFlags, this.cacheTtl);
     }
 }
