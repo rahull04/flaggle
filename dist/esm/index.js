@@ -18,3 +18,4 @@ export * from "./adapters/postgresAdapter";
 export * from "./adapters/mysqlAdapter";
 export * from "./adapters/mongoAdapter";
 export * from "./adapters/memoryAdapter";
+export * from "./expressRouter";

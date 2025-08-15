@@ -36,3 +36,4 @@ __exportStar(require("./adapters/postgresAdapter"), exports);
 __exportStar(require("./adapters/mysqlAdapter"), exports);
 __exportStar(require("./adapters/mongoAdapter"), exports);
 __exportStar(require("./adapters/memoryAdapter"), exports);
+__exportStar(require("./expressRouter"), exports);
