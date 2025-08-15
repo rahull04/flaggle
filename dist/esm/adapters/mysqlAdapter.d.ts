@@ -4,6 +4,7 @@ export declare class MySQLAdapter implements FeatureFlagAdapter {
     private autoMigrate;
     private pool;
     constructor(config: any, tableName?: string, autoMigrate?: boolean);
+    /** Required by FeatureFlagAdapter */
     init(): Promise<void>;
     getFlag(key: string, env: string): Promise<FeatureFlag | undefined>;
     getAllFlags(env: string): Promise<any>;

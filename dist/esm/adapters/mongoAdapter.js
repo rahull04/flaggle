@@ -1,18 +1,17 @@
-import { MongoClient } from "mongodb";
 export class MongoAdapter {
-    constructor(uri, dbName = "feature_flags_db", collectionName = "feature_flags", autoMigrate = true) {
+    constructor(uri, dbName = "feature_flags_db", collectionName = "flaggle", autoMigrate = true) {
         this.uri = uri;
         this.dbName = dbName;
         this.collectionName = collectionName;
         this.autoMigrate = autoMigrate;
-        this.client = new MongoClient(uri);
     }
     async init() {
+        const { MongoClient } = await import("mongodb");
+        this.client = new MongoClient(this.uri);
         await this.client.connect();
         this.db = this.client.db(this.dbName);
         this.collection = this.db.collection(this.collectionName);
         if (this.autoMigrate) {
-            // Seed if empty
             const count = await this.collection.countDocuments();
             if (count === 0) {
                 await this.collection.insertMany([
@@ -35,10 +34,7 @@ export class MongoAdapter {
         }
     }
     async getFlag(key, env) {
-        return (await this.collection.findOne({
-            key,
-            environment: env,
-        }));
+        return (await this.collection.findOne({ key, environment: env }));
     }
     async getAllFlags(env) {
         return (await this.collection

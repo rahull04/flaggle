@@ -1,13 +1,13 @@
-import { Pool } from "pg";
 import { FeatureFlag, FeatureFlagAdapter } from "../FeatureFlagAdapter";
 
 export class PostgresAdapter implements FeatureFlagAdapter {
   constructor(
-    private pool: Pool,
-    private tableName: string = "feat_flip",
+    private pool: any, // will be passed from DbAdapter
+    private tableName: string = "flaggle",
     private autoMigrate: boolean = true
   ) {}
 
+  /** Required by FeatureFlagAdapter */
   async init(): Promise<void> {
     if (this.autoMigrate) {
       await this.runMigrationAndSeed();
@@ -28,14 +28,15 @@ export class PostgresAdapter implements FeatureFlagAdapter {
     `;
     await this.pool.query(createTableQuery);
 
-    // Check if table is empty
     const { rows } = await this.pool.query(
       `SELECT COUNT(*) AS count FROM ${this.tableName}`
     );
+
     if (parseInt(rows[0].count, 10) === 0) {
       console.log(
         `[PostgresAdapter] Table empty — inserting default feature flags...`
       );
+
       const seedFlags: FeatureFlag[] = [
         {
           id: "1",
@@ -46,7 +47,7 @@ export class PostgresAdapter implements FeatureFlagAdapter {
           updatedAt: new Date(),
         },
         {
-          id: "2", // fixed duplicate id
+          id: "2",
           key: "beta-api",
           enabled: false,
           environment: "dev",
@@ -58,6 +59,7 @@ export class PostgresAdapter implements FeatureFlagAdapter {
       for (const flag of seedFlags) {
         await this.upsertFlag(flag);
       }
+
       console.log(
         `[PostgresAdapter] Default feature flags seeded successfully.`
       );

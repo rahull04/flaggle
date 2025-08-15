@@ -1,18 +1,21 @@
-import { createPool, Pool } from "mysql2/promise";
 import { FeatureFlag, FeatureFlagAdapter } from "../FeatureFlagAdapter";
 
 export class MySQLAdapter implements FeatureFlagAdapter {
-  private pool: Pool;
+  private pool: any;
 
   constructor(
     config: any,
-    private tableName: string = "feature_flags",
+    private tableName: string = "flaggle",
     private autoMigrate: boolean = true
   ) {
-    this.pool = createPool(config);
+    this.pool = config; // will be replaced in init()
   }
 
+  /** Required by FeatureFlagAdapter */
   async init() {
+    const { createPool } = await import("mysql2/promise");
+    this.pool = createPool(this.pool); // dynamic pool creation
+
     if (this.autoMigrate) {
       await this.pool.query(`
         CREATE TABLE IF NOT EXISTS \`${this.tableName}\` (
@@ -29,6 +32,7 @@ export class MySQLAdapter implements FeatureFlagAdapter {
       const [rows] = await this.pool.query(
         `SELECT COUNT(*) AS count FROM \`${this.tableName}\``
       );
+
       if ((rows as any)[0].count === 0) {
         await this.upsertFlag({
           id: "1",

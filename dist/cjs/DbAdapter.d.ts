@@ -1,4 +1,4 @@
-import { FeatureFlagAdapter } from "./FeatureFlagAdapter";
+import { FeatureFlagAdapter, FeatureFlag } from "./FeatureFlagAdapter";
 export declare class DbAdapter implements FeatureFlagAdapter {
     private connectionString;
     private options;
@@ -8,8 +8,8 @@ export declare class DbAdapter implements FeatureFlagAdapter {
         autoMigrate?: boolean;
     });
     init(): Promise<void>;
-    getFlag(key: string, env: string): Promise<import("./FeatureFlagAdapter").FeatureFlag | undefined>;
-    getAllFlags(env: string): Promise<import("./FeatureFlagAdapter").FeatureFlag[]>;
-    upsertFlag(flag: any): Promise<void>;
+    getFlag(key: string, env: string): Promise<FeatureFlag | undefined>;
+    getAllFlags(env: string): Promise<FeatureFlag[]>;
+    upsertFlag(flag: FeatureFlag): Promise<void>;
     deleteFlag(key: string, env: string): Promise<void>;
 }

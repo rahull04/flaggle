@@ -1,10 +1,11 @@
-import { Pool } from "pg";
 import { FeatureFlag, FeatureFlagAdapter } from "../FeatureFlagAdapter";
 export declare class PostgresAdapter implements FeatureFlagAdapter {
     private pool;
     private tableName;
     private autoMigrate;
-    constructor(pool: Pool, tableName?: string, autoMigrate?: boolean);
+    constructor(pool: any, // will be passed from DbAdapter
+    tableName?: string, autoMigrate?: boolean);
+    /** Required by FeatureFlagAdapter */
     init(): Promise<void>;
     private runMigrationAndSeed;
     getFlag(key: string, env: string): Promise<FeatureFlag | undefined>;

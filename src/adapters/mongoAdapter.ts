@@ -1,27 +1,25 @@
-import { MongoClient, Db, Collection } from "mongodb";
 import { FeatureFlag, FeatureFlagAdapter } from "../FeatureFlagAdapter";
 
 export class MongoAdapter implements FeatureFlagAdapter {
-  private client: MongoClient;
-  private db!: Db;
-  private collection!: Collection;
+  private client: any;
+  private db: any;
+  private collection: any;
 
   constructor(
     private uri: string,
     private dbName: string = "feature_flags_db",
-    private collectionName: string = "feature_flags",
+    private collectionName: string = "flaggle",
     private autoMigrate: boolean = true
-  ) {
-    this.client = new MongoClient(uri);
-  }
+  ) {}
 
   async init() {
+    const { MongoClient } = await import("mongodb");
+    this.client = new MongoClient(this.uri);
     await this.client.connect();
     this.db = this.client.db(this.dbName);
     this.collection = this.db.collection(this.collectionName);
 
     if (this.autoMigrate) {
-      // Seed if empty
       const count = await this.collection.countDocuments();
       if (count === 0) {
         await this.collection.insertMany([
@@ -45,16 +43,15 @@ export class MongoAdapter implements FeatureFlagAdapter {
   }
 
   async getFlag(key: string, env: string) {
-    return (await this.collection.findOne({
-      key,
-      environment: env,
-    })) as unknown as FeatureFlag | undefined;
+    return (await this.collection.findOne({ key, environment: env })) as
+      | FeatureFlag
+      | undefined;
   }
 
   async getAllFlags(env: string) {
     return (await this.collection
       .find({ environment: env })
-      .toArray()) as unknown as FeatureFlag[];
+      .toArray()) as FeatureFlag[];
   }
 
   async upsertFlag(flag: FeatureFlag) {

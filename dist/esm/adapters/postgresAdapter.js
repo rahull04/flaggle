@@ -1,9 +1,11 @@
 export class PostgresAdapter {
-    constructor(pool, tableName = "feat_flip", autoMigrate = true) {
+    constructor(pool, // will be passed from DbAdapter
+    tableName = "flaggle", autoMigrate = true) {
         this.pool = pool;
         this.tableName = tableName;
         this.autoMigrate = autoMigrate;
     }
+    /** Required by FeatureFlagAdapter */
     async init() {
         if (this.autoMigrate) {
             await this.runMigrationAndSeed();
@@ -22,7 +24,6 @@ export class PostgresAdapter {
       );
     `;
         await this.pool.query(createTableQuery);
-        // Check if table is empty
         const { rows } = await this.pool.query(`SELECT COUNT(*) AS count FROM ${this.tableName}`);
         if (parseInt(rows[0].count, 10) === 0) {
             console.log(`[PostgresAdapter] Table empty — inserting default feature flags...`);

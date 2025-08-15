@@ -1,11 +1,13 @@
-import { createPool } from "mysql2/promise";
 export class MySQLAdapter {
-    constructor(config, tableName = "feature_flags", autoMigrate = true) {
+    constructor(config, tableName = "flaggle", autoMigrate = true) {
         this.tableName = tableName;
         this.autoMigrate = autoMigrate;
-        this.pool = createPool(config);
+        this.pool = config; // will be replaced in init()
     }
+    /** Required by FeatureFlagAdapter */
     async init() {
+        const { createPool } = await import("mysql2/promise");
+        this.pool = createPool(this.pool); // dynamic pool creation
         if (this.autoMigrate) {
             await this.pool.query(`
         CREATE TABLE IF NOT EXISTS \`${this.tableName}\` (
