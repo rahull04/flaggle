@@ -1,7 +1,4 @@
 import { FeatureFlagAdapter, FeatureFlag } from "./FeatureFlagAdapter";
-import { PostgresAdapter } from "./adapters/postgresAdapter";
-import { MySQLAdapter } from "./adapters/mysqlAdapter";
-import { MongoAdapter } from "./adapters/mongoAdapter";
 
 export class DbAdapter implements FeatureFlagAdapter {
   private adapter!: FeatureFlagAdapter;
@@ -13,7 +10,10 @@ export class DbAdapter implements FeatureFlagAdapter {
 
   async init() {
     if (this.connectionString.startsWith("postgres://")) {
-      let { Pool } = await import("pg"); // dynamic import
+      // dynamically import pg + adapter
+      const { Pool } = await import("pg");
+      const { PostgresAdapter } = await import("./adapters/postgresAdapter");
+
       const pool = new Pool({ connectionString: this.connectionString });
       this.adapter = new PostgresAdapter(
         pool,
@@ -21,7 +21,9 @@ export class DbAdapter implements FeatureFlagAdapter {
         this.options.autoMigrate ?? true
       );
     } else if (this.connectionString.startsWith("mysql://")) {
-      let { createPool } = await import("mysql2/promise");
+      const { createPool } = await import("mysql2/promise");
+      const { MySQLAdapter } = await import("./adapters/mysqlAdapter");
+
       const pool = createPool({ uri: this.connectionString });
       this.adapter = new MySQLAdapter(
         pool,
@@ -32,7 +34,9 @@ export class DbAdapter implements FeatureFlagAdapter {
       this.connectionString.startsWith("mongodb://") ||
       this.connectionString.startsWith("mongodb+srv://")
     ) {
-      let { MongoClient } = await import("mongodb");
+      const { MongoClient } = await import("mongodb");
+      const { MongoAdapter } = await import("./adapters/mongoAdapter");
+
       this.adapter = new MongoAdapter(
         this.connectionString,
         this.options.tableName,
