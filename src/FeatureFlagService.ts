@@ -21,7 +21,7 @@ export class FeatureFlagService {
   async isEnabled(
     key: string,
     env?: string,
-    refresh: boolean = false
+    refresh: boolean = true
   ): Promise<boolean> {
     const environment = env || this.defaultEnv;
     const cacheKey = `${environment}:${key}`;
@@ -48,7 +48,7 @@ export class FeatureFlagService {
    */
   async getAllFlags(
     env?: string,
-    refresh: boolean = false
+    refresh: boolean = true
   ): Promise<FeatureFlag[]> {
     const environment = env || this.defaultEnv;
     const cacheKey = `allFlags:${environment}`;
